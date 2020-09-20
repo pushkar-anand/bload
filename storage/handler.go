@@ -2,18 +2,22 @@ package storage
 
 import (
 	"github.com/sirupsen/logrus"
+	"html/template"
 	"net/http"
 )
 
 type Handler struct {
 	storage *Storage
-	logger *logrus.Logger
+	logger  *logrus.Logger
 }
+
+var homeTmpl = template.Must(template.ParseFiles("./views/home.html"))
+var shareTmpl = template.Must(template.ParseFiles("./views/share.html"))
 
 func NewHandler(storage *Storage, logger *logrus.Logger) *Handler {
 	return &Handler{
 		storage: storage,
-		logger: logger,
+		logger:  logger,
 	}
 }
 
@@ -24,13 +28,24 @@ func (h *Handler) ListAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Debugf("Data: %v", items)
+	data := map[string]interface{}{
+		"Items": items,
+	}
 
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	err = homeTmpl.Execute(w, data)
+	if err != nil {
+		h.logger.WithError(err).Error(err)
+	}
 }
 
 func (h *Handler) ShareForm(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("content-type", "text/html; charset=utf-8")
+	err := shareTmpl.Execute(w, nil)
+	if err != nil {
+		h.logger.WithError(err).Error(err)
+	}
 }
 
 func (h *Handler) Share(w http.ResponseWriter, r *http.Request) {
@@ -40,10 +55,10 @@ func (h *Handler) Share(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	txt := r.PostFormValue("data")
+	txt := r.Form.Get("data")
 
 	item := &sharedItem{
-		Type: itemText,
+		Type:  itemText,
 		Value: txt,
 	}
 
@@ -53,5 +68,5 @@ func (h *Handler) Share(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
