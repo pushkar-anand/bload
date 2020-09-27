@@ -1,0 +1,17 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    ports:
+    - 6379
+  web:
+    build: .
+    env_file:
+      - .env
+    command: /bload.out
+    ports:
+    - 3000:3000
+    depends_on:
+      - redis
+    links:
+      - redis
