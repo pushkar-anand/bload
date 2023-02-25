@@ -8,5 +8,5 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/sirupsen/logrus v1.6.0
-	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
